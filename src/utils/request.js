@@ -1,4 +1,5 @@
 import axios from 'axios'
+import store from '@/store'
 import { Message } from 'element-ui'
 const service = axios.create({
   // 如果执行 npm run dev  值为 /api 正确  /api 这个代理只是给开发环境配置的代理
@@ -7,7 +8,18 @@ const service = axios.create({
   timeout: 5000 // 定义5秒超时
 }) // 创建一个axios的实例
 
-service.interceptors.request.use()
+// 请求拦截器
+service.interceptors.request.use(config => {
+  // config 是请求的配置信息
+  // 注入token
+  if (store.getters.token) {
+    config.headers['Authorization'] = `Bearer ${store.getters.token}`
+  }
+  return config // 必须要返回
+}, error => {
+  return Promise.reject(error)
+})
+
 // 响应拦截器
 service.interceptors.response.use(response => {
   // axios默认加了一层data
