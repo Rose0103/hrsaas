@@ -1,5 +1,5 @@
-import { getToken, setToken, removeToken } from '@/utils/auth'
-import { getUserInfo, login } from '@/api/user'
+import { getToken, setToken, removeToken, setTimeStamp } from '@/utils/auth'
+import { getUserInfo, login, getUserDetailById } from '@/api/user'
 // 状态
 const state = {
   token: getToken(), // 设置token初始状态   token持久化 => 放到缓存中
@@ -36,12 +36,24 @@ const actions = {
     // 表示登录接口调用成功 也就是意味着你的用户名和密码是正确的
     // 现在有用户token
     // actions 修改state 必须通过mutations
-    context.commit('setToken', result)
+    context.commit('setToken', result) // 设置token
+    // 拿到token说明登录成功
+    setTimeStamp() // 设置当前时间戳
   },
   async getUserInfo(context) {
     const result = await getUserInfo()
-    context.commit('setUserInfo', result) // 提交mutations
+    const baseInfo = await getUserDetailById(result.userId) // 为了获取头像
+    const baseResult = { ...result, ...baseInfo } // 将两个接口结果合并
+    // 此时已经获取到了用户的基本资料 迫不得已 为了头像再次调用一个接口
+    context.commit('setUserInfo', baseResult) // 提交mutations
     return false // 这里是给我们做权限的时候 留下伏笔
+  },
+  // 登出的action
+  logout(context) {
+    // 删除token
+    context.commit('removeToken') // 不仅仅删除了vuex中的 还删除了缓存中的
+    // 删除用户资料
+    context.commit('removeUserInfo') // 删除用户信息
   }
 }
 export default {

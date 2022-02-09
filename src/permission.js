@@ -6,7 +6,7 @@ import NProgress from 'nprogress' // 引入一份进度条插件
 import 'nprogress/nprogress.css' // 引入进度条样式
 
 const whiteList = ['/login', '/404'] // 定义白名单  所有不受权限控制的页面
-router.beforeEach((to, from, next) => {
+router.beforeEach(async(to, from, next) => {
   NProgress.start() // 开启进度条
   // 如果有token
   if (store.getters.token) {
@@ -15,6 +15,14 @@ router.beforeEach((to, from, next) => {
       // 跳转到主页
       next('/')
     } else {
+      // 只有放过的时候才去获取用户资料
+      // 是每次都获取吗
+      // 如果当前vuex中有用户的资料的id表示  已经有资料了，就不需要获取了 如果没有id才需要获取
+      if (!store.state.user.userInfo.userId) {
+        // 如果没有id才表示当前用户资料没有获取过
+        await store.dispatch('user/getUserInfo')
+        // 如果说后续 需要根据用户资料获取数据的话，这里必须改成 同步
+      }
       next()
     }
   } else {
