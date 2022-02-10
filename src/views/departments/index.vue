@@ -6,11 +6,11 @@
         <TreeTools :tree-node="company" :is-root=" true " @addDepts="addDepts" />
         <!-- 树形菜单 -->
         <el-tree :data="departs" :props="defaultProps" :default-expand-all="false">
-          <TreeTools slot-scope="{ data }" :tree-node="data" @addDepts="addDepts" @delDepts="getDepartments" />
+          <TreeTools slot-scope="{ data }" :tree-node="data" @addDepts="addDepts" @delDepts="getDepartments" @editDepts="editDepts" />
         </el-tree>
       </el-card>
     </div>
-    <AddDept :show-dialog.sync="showDialog" :tree-node="node" @addDepts="getDepartments" />
+    <AddDept ref="addDept" :show-dialog.sync="showDialog" :tree-node="node" @addDepts="getDepartments" />
   </div>
 </template>
 
@@ -43,10 +43,20 @@ export default {
       this.company = { name: result.companyName, manager: '负责人', id: '' }
       this.departs = tranListToTreeData(result.depts, '') // 需要将其转换成树形结构
     },
+    // 新增部门节点
     addDepts(node) {
       this.showDialog = true // 显示弹层
       // 因为node是当前的点击的部门， 此时这个部门应该记录下来,
       this.node = node
+    },
+    // 编辑部门节点
+    editDepts(node) {
+      // 首先打开弹层
+      this.showDialog = true
+      this.node = node // 赋值操作的节点
+      // 我们需要在这个位置 调用子组件的方法
+      // 父组件 调用子组件的方法
+      this.$refs.addDept.getDepartDetail(node.id) // 直接调用子组件中的方法 传入一个id
     }
   }
 }

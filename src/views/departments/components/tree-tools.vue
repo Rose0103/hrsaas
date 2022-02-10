@@ -47,6 +47,7 @@ export default {
         this.$emit('addDepts', this.treeNode) // 为何传出treeNode 因为是添加子部门 需要当前部门的数据
       } else if (type === 'edit') {
         //  编辑部门的操作
+        this.$emit('editDepts', this.treeNode)
       } else {
         //  删除操作
         this.$confirm('您确定要删除该组织部门吗').then(() => {

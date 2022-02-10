@@ -1,6 +1,6 @@
 <template>
   <!-- 新增部门的弹层 -->
-  <el-dialog title="新增部门" :visible="showDialog" @close="btnCancel">
+  <el-dialog :title="showTitle" :visible="showDialog" @close="btnCancel">
     <el-form ref="deptForm" :model="formData" :rules="rules" label-width="120px">
       <el-form-item label="部门名称" prop="name">
         <el-input v-model="formData.name" style="width:80%" placeholder="1-50个字符" />
@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { getDepartments, addDepartments } from '@/api/departments'
+import { getDepartments, addDepartments, getDepartDetail, updateDepartments } from '@/api/departments'
 import { getEmployeeSimple } from '@/api/employees'
 export default {
   props: {
@@ -49,15 +49,32 @@ export default {
       const { depts } = await getDepartments()
       // 去找同级部门下 有没有和value相同的数据
       // 找到同级部门的所有子部门
-      const isPepeat = depts.filter(item => item.pid === this.treeNode.id).some(item => item.name === value)
+      let isPepeat = false
+      if (this.formData.id) {
+        // 有id就是编辑模式
+        // 编辑 张三 => 校验规则，除了我之外 同级部门下 不能有叫张三的
+        isPepeat = depts.filter(item => item.pid === this.treeNode.pid && item.id !== this.treeNode.id).some(item => item.name === value)
+      } else {
+        // 没有id就是新增模式
+        isPepeat = depts.filter(item => item.pid === this.treeNode.id).some(item => item.name === value)
+      }
       // 如果isPepeat为true 表示找到了一样的名字
       isPepeat ? callback(new Error(`同级部门下已经有${value}的部门了`)) : callback()
     }
-    //
+    // 检查编码重复
     const checkCodeRepeat = async(rule, value, callback) => {
       const { depts } = await getDepartments()
-      const isRepeat = depts.some(item => item.code === value && value) // 这里加一个 value不为空 因为我们的部门有可能没有code
-      isRepeat ? callback(new Error(`组织架构中已经有部门使用${value}编码`)) : callback()
+      let isPepeat = false
+      if (this.formData.id) {
+        // 有id就是编辑模式
+        // 编辑 张三 => 校验规则，除了我之外 同级部门下 不能有叫张三的
+        isPepeat = depts.filter(item => item.id !== this.treeNode.id).some(item => item.name === value && value)
+      } else {
+        // 没有id就是新增模式
+        isPepeat = depts.some(item => item.code === value && value) // 这里加一个 value不为空 因为我们的部门有可能没有code
+      }
+      // 如果isPepeat为true 表示找到了一样的名字
+      isPepeat ? callback(new Error(`组织架构中已经有部门使用${value}编码`)) : callback()
     }
     return {
       // 定义表单数据
@@ -86,17 +103,32 @@ export default {
       peoples: [] // 接收获取的员工简单列表的数据
     }
   },
+  computed: {
+    showTitle() {
+      return this.formData.id ? '编辑部门' : '添加子部门'
+    }
+  },
   methods: {
     // 查询部门负责人下拉框数据
     async getEmployeeSimple() {
       this.peoples = await getEmployeeSimple()
     },
+    // 获取部门详情
+    async  getDepartDetail(id) {
+      this.formData = await getDepartDetail(id)
+    },
     btnOK() {
       this.$refs.deptForm.validate(async isOK => {
         if (isOK) {
           // 表示可以提交了
-          // 调用新增接口 添加父部门的id
-          await addDepartments({ ...this.formData, pid: this.treeNode.id })
+          // 要分清楚现在是编辑还是新增
+          if (this.formData.id) {
+            // 编辑模式  调用编辑接口
+            await updateDepartments(this.formData)
+          } else {
+            // 新增模式
+            await addDepartments({ ...this.formData, pid: this.treeNode.id }) // 调用新增接口 添加父部门的id
+          }
           this.$emit('addDepts')
           // 关闭弹窗
           this.$emit('update:showDialog', false)
@@ -104,6 +136,13 @@ export default {
       })
     },
     btnCancel() {
+      // 重置数据  因为resetFields 只能重置 表单上的数据 非表单上的 比如 编辑中id 不能重置
+      this.formData = {
+        name: '',
+        code: '',
+        manager: '',
+        introduce: ''
+      }
       // 关闭弹窗
       this.$emit('update:showDialog', false)
       // 清除之前的校验
