@@ -5,12 +5,12 @@
       <el-card class="tree-card">
         <TreeTools :tree-node="company" :is-root=" true " @addDepts="addDepts" />
         <!-- 树形菜单 -->
-        <el-tree :data="departs" :props="defaultProps" :default-expand-all="true" @delDepts="getDepartments">
-          <TreeTools slot-scope="{ data }" :tree-node="data" @addDepts="addDepts" />
+        <el-tree :data="departs" :props="defaultProps" :default-expand-all="false">
+          <TreeTools slot-scope="{ data }" :tree-node="data" @addDepts="addDepts" @delDepts="getDepartments" />
         </el-tree>
       </el-card>
     </div>
-    <AddDept :show-dialog="showDialog" />
+    <AddDept :show-dialog.sync="showDialog" :tree-node="node" @addDepts="getDepartments" />
   </div>
 </template>
 
@@ -40,9 +40,8 @@ export default {
   methods: {
     async getDepartments() {
       const result = await getDepartments()
-      this.company = { name: result.companyName, manager: '负责人' }
+      this.company = { name: result.companyName, manager: '负责人', id: '' }
       this.departs = tranListToTreeData(result.depts, '') // 需要将其转换成树形结构
-      console.log(result)
     },
     addDepts(node) {
       this.showDialog = true // 显示弹层
