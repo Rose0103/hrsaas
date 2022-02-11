@@ -50,7 +50,11 @@ export default {
         this.$emit('editDepts', this.treeNode)
       } else {
         //  删除操作
-        this.$confirm('您确定要删除该组织部门吗').then(() => {
+        this.$confirm('您确定要删除该组织部门吗', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
           return delDepartments(this.treeNode.id)
         }).then(() => {
           // 只需要等到成功的时候，调用接口删除了 后端数据变化了 但是前端没有变 重新获取

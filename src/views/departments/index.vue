@@ -1,11 +1,11 @@
 <template>
-  <div class="dashboard-container">
+  <div v-loading="loading" class="dashboard-container">
     <div class="app-container">
       <!-- 组织架构内容 头部 -->
       <el-card class="tree-card">
         <TreeTools :tree-node="company" :is-root=" true " @addDepts="addDepts" />
         <!-- 树形菜单 -->
-        <el-tree :data="departs" :props="defaultProps" :default-expand-all="false">
+        <el-tree :data="departs" :props="defaultProps" :default-expand-all="true">
           <TreeTools slot-scope="{ data }" :tree-node="data" @addDepts="addDepts" @delDepts="getDepartments" @editDepts="editDepts" />
         </el-tree>
       </el-card>
@@ -31,7 +31,8 @@ export default {
         label: 'label'
       },
       showDialog: false, // 显示窗体
-      node: null
+      node: null,
+      loading: false // 用来控制进度弹层的显示和隐藏
     }
   },
   created() {
@@ -39,9 +40,11 @@ export default {
   },
   methods: {
     async getDepartments() {
+      this.loading = true
       const result = await getDepartments()
       this.company = { name: result.companyName, manager: '负责人', id: '' }
       this.departs = tranListToTreeData(result.depts, '') // 需要将其转换成树形结构
+      this.loading = false
     },
     // 新增部门节点
     addDepts(node) {
