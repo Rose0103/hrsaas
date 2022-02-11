@@ -19,10 +19,19 @@
           <el-table-column type="index" width="80" align="center" label="序号" sortable="" />
           <el-table-column prop="username" align="center" label="姓名" sortable="" />
           <el-table-column prop="workNumber" align="center" label="工号" sortable="" />
-          <el-table-column prop="formOfEmployment" align="center" label="聘用形式" sortable="" />
+          <el-table-column prop="formOfEmployment" align="center" label="聘用形式" sortable="" :formatter="formatEmployment" />
           <el-table-column prop="departmentName" align="center" label="部门" sortable="" />
-          <el-table-column prop="timeOfEntry" align="center" label="入职时间" sortable="" />
-          <el-table-column prop="enableState" align="center" label="账户状态" sortable="" />
+          <!-- 作用域插槽来做 +过滤器 -->
+          <el-table-column prop="timeOfEntry" align="center" label="入职时间" sortable="">
+            <template v-slot="{ row }">
+              {{ row.timeOfEntry | formatDate }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="enableState" align="center" label="账户状态" sortable="">
+            <template v-slot=" { row} ">
+              <el-switch :value="row.enableState === 1" />
+            </template>
+          </el-table-column>
           <el-table-column label="操作" sortable="" fixed="right" width="280">
             <template>
               <el-button type="text" size="small">查看</el-button>
@@ -46,6 +55,7 @@
 
 <script>
 import { getEmployeeSimpleList } from '@/api/employees'
+import EmployeeEnum from '@/api/constant/employees'
 export default {
   data() {
     return {
@@ -72,6 +82,11 @@ export default {
     changePage(val) {
       this.pager.page = val
       this.getEmployeeSimpleList()
+    },
+    formatEmployment(row, column, cellValue, index) {
+      // 要去找 1所对应的值
+      const obj = EmployeeEnum.hireType.find(item => item.id === cellValue)
+      return obj ? obj.value : '未知'
     }
   }
 }
