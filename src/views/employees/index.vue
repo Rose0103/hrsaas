@@ -10,7 +10,7 @@
         <template v-slot:after>
           <el-button size="small" type="warning">导入</el-button>
           <el-button size="small" type="danger">导出</el-button>
-          <el-button size="small" type="primary">新增员工</el-button>
+          <el-button size="small" type="primary" @click="showDialog=true">新增员工</el-button>
         </template>
       </PageTools>
       <!-- 放置表格和分页 -->
@@ -33,13 +33,13 @@
             </template>
           </el-table-column>
           <el-table-column label="操作" sortable="" fixed="right" width="280">
-            <template>
+            <template slot-scope="{ row }">
               <el-button type="text" size="small">查看</el-button>
               <el-button type="text" size="small">转正</el-button>
               <el-button type="text" size="small">调岗</el-button>
               <el-button type="text" size="small">离职</el-button>
               <el-button type="text" size="small">角色</el-button>
-              <el-button type="text" size="small">删除</el-button>
+              <el-button type="text" size="small" @click="delEmployee(row.id)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -50,13 +50,18 @@
         </el-row>
       </el-card>
     </div>
+    <AddEmployee :show-dialog.sync="showDialog" />
   </div>
 </template>
 
 <script>
-import { getEmployeeSimpleList } from '@/api/employees'
+import { getEmployeeList, delEmployee } from '@/api/employees'
 import EmployeeEnum from '@/api/constant/employees'
+import AddEmployee from './components/add-employee.vue'
 export default {
+  components: {
+    AddEmployee
+  },
   data() {
     return {
       list: [],
@@ -65,28 +70,47 @@ export default {
         size: 10,
         total: 0
       },
-      loading: false
+      loading: false,
+      showDialog: false
     }
   },
   created() {
-    this.getEmployeeSimpleList()
+    this.getEmployeeList()
   },
   methods: {
-    async getEmployeeSimpleList() {
+    async getEmployeeList() {
       this.loading = true
-      const { total, rows } = await getEmployeeSimpleList(this.pager)
+      const { total, rows } = await getEmployeeList(this.pager)
       this.list = rows
       this.pager.total = total
       this.loading = false
     },
     changePage(val) {
       this.pager.page = val
-      this.getEmployeeSimpleList()
+      this.getEmployeeList()
     },
     formatEmployment(row, column, cellValue, index) {
       // 要去找 1所对应的值
       const obj = EmployeeEnum.hireType.find(item => item.id === cellValue)
       return obj ? obj.value : '未知'
+    },
+    // 删除按钮
+    async delEmployee(id) {
+      //  提示
+      try {
+        await this.$confirm('确认删除该员工吗', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async() => {
+          // 只有点击了确定 才能进入到下方
+          await delEmployee(id) // 调用删除接口
+          this.getEmployeeList() // 重新加载数据
+          this.$message.success('删除员工成功')
+        })
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 }
