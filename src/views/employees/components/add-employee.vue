@@ -1,7 +1,7 @@
 <template>
   <el-dialog title="新增员工" :visible="showDialog">
     <!-- 表单 -->
-    <el-form :model="employeeForm" :rules="rules" label-width="120px">
+    <el-form ref="addEmployee" :model="employeeForm" :rules="rules" label-width="120px">
       <el-form-item label="姓名" prop="username">
         <el-input v-model="employeeForm.username" style="width:50%" placeholder="请输入姓名" />
       </el-form-item>
@@ -32,8 +32,8 @@
     <template v-slot:footer>
       <el-row type="flex" justify="center">
         <el-col :span="4">
-          <el-button size="small">取消</el-button>
-          <el-button type="primary" size="small">确定</el-button>
+          <el-button size="small" @click="btnCancel">取消</el-button>
+          <el-button type="primary" size="small" @click="btnOK">确定</el-button>
         </el-col>
       </el-row>
     </template>
@@ -42,6 +42,7 @@
 
 <script>
 import { getDepartments } from '@/api/departments'
+import { addEmployee } from '@/api/employees'
 import { tranListToTreeData } from '@/utils'
 import EmployeeEnum from '@/api/constant/employees'
 export default {
@@ -97,6 +98,25 @@ export default {
     selectNode(node) {
       this.employeeForm.departmentName = node.name
       this.showTree = false
+    },
+    async btnOK() {
+    // 校验表单
+      try {
+        await this.$refs.addEmployee.validate()
+        // 校验成功
+        await addEmployee(this.employeeForm)
+        // 通知父组件更新数据
+        // this.$parent   父组件的实例
+        this.$parent.getEmployeeList && this.$parent.getEmployeeList // 直接调用父组件的更新方法
+        this.$parent.showDialog = false
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    btnCancel() {
+      this.employeeForm = {}
+      this.$refs.addEmployee.resetFields() // 移除之前的校验
+      this.$emit('updata:showDialog', false)
     }
   }
 }

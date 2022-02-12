@@ -8,8 +8,8 @@
           </span>
         </template>
         <template v-slot:after>
-          <el-button size="small" type="warning">导入</el-button>
-          <el-button size="small" type="danger">导出</el-button>
+          <el-button size="small" type="warning" @click="$router.push('/import?type=user')">导入</el-button>
+          <el-button size="small" type="danger" @click="exportData">导出</el-button>
           <el-button size="small" type="primary" @click="showDialog=true">新增员工</el-button>
         </template>
       </PageTools>
@@ -58,6 +58,7 @@
 import { getEmployeeList, delEmployee } from '@/api/employees'
 import EmployeeEnum from '@/api/constant/employees'
 import AddEmployee from './components/add-employee.vue'
+import { formatDate } from '@/filters'
 export default {
   components: {
     AddEmployee
@@ -71,7 +72,8 @@ export default {
         total: 0
       },
       loading: false,
-      showDialog: false
+      showDialog: false,
+      type: this.$route.query.type
     }
   },
   created() {
@@ -111,6 +113,51 @@ export default {
       } catch (error) {
         console.log(error)
       }
+    },
+    // 导出excel
+    exportData() {
+      // 表头对应关系
+      const headers = {
+        '手机号': 'mobile',
+        '姓名': 'username',
+        '入职日期': 'timeOfEntry',
+        '聘用形式': 'formOfEmployment',
+        '转正日期': 'correctionTime',
+        '工号': 'workNumber',
+        '部门': 'departmentName'
+      }
+      import('@/vendor/Export2Excel').then(async excel => {
+        // 获取全部数据
+        const { rows } = await getEmployeeList({ page: 1, size: this.pager.total })
+        // 全部数据格式化
+        const data = this.formatJson(headers, rows)
+        // excel是引入文件的导出对象
+        excel.export_json_to_excel({
+          header: Object.keys(headers),
+          data,
+          filename: '员工资料表'
+        })
+      })
+    },
+    // 该方法负责将数组对象转化成二维数组
+    // [{ username: '张三'},{},{}]  => [[’张三'],[],[]]
+    formatJson(header, rows) {
+      // 遍历数组
+      return rows.map(item => {
+        // item是一个对象 { username: '张三',mobile: 139003289,...}
+        // header 是 ['姓名', '手机号',...]
+        return Object.keys(header).map(key => {
+          // 导出需要判断 字段格式
+          if (header[key] === 'timeOfEntry' || header[key] === 'correctionTime') {
+            return formatDate(item[header[key]]) // 返回格式化之前的时间
+          } else if (header[key] === 'formOfEmployment') {
+            const en = EmployeeEnum.hireType(obj => obj.id === item[header[key]])
+            return en ? en.value : '未知'
+          }
+          return item[header[key]]
+        })
+        // ['张三', 139003289,...]
+      })
     }
   }
 }
