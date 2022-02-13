@@ -49,7 +49,7 @@
               <el-button type="text" size="small">转正</el-button>
               <el-button type="text" size="small">调岗</el-button>
               <el-button type="text" size="small">离职</el-button>
-              <el-button type="text" size="small">角色</el-button>
+              <el-button type="text" size="small" @click="editRole(row.id)">角色</el-button>
               <el-button type="text" size="small" @click="delEmployee(row.id)">删除</el-button>
             </template>
           </el-table-column>
@@ -62,6 +62,8 @@
       </el-card>
     </div>
     <AddEmployee :show-dialog.sync="showDialog" />
+    <!-- 放置角色分配组件 -->
+    <AssignRole ref="assignRole" :show-role-dialog.sync="showRoleDialog" :user-id="userId" />
   </div>
 </template>
 
@@ -69,10 +71,12 @@
 import { getEmployeeList, delEmployee } from '@/api/employees'
 import EmployeeEnum from '@/api/constant/employees'
 import AddEmployee from './components/add-employee.vue'
+import AssignRole from './components/assign-role.vue'
 import { formatDate } from '@/filters'
 export default {
   components: {
-    AddEmployee
+    AddEmployee,
+    AssignRole
   },
   data() {
     return {
@@ -84,7 +88,9 @@ export default {
       },
       loading: false,
       showDialog: false,
-      type: this.$route.query.type
+      type: this.$route.query.type,
+      showRoleDialog: false,
+      userId: null
     }
   },
   created() {
@@ -106,6 +112,12 @@ export default {
       // 要去找 1所对应的值
       const obj = EmployeeEnum.hireType.find(item => item.id === cellValue)
       return obj ? obj.value : '未知'
+    },
+    // 编辑角色
+    async  editRole(id) {
+      this.userId = id // props传值 是异步的
+      await this.$refs.assignRole.getUserDetailById(id) // 父组件调用子组件方法
+      this.showRoleDialog = true
     },
     // 删除按钮
     async delEmployee(id) {
