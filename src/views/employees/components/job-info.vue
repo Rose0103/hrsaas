@@ -18,7 +18,7 @@
         <el-form-item label="转正状态">
           <el-select v-model="formData.stateOfCorrection" placeholder="请选择" disabled>
             <el-option
-              v-for="item in EmployeeEnum.stateOfCorrection"
+              v-for="item in EmployeeEnum.positiveType"
               :key="item.value"
               :value="item.value"
             />
@@ -159,6 +159,7 @@
 </template>
 <script>
 import EmployeeEnum from '@/api/constant/employees'
+import { getJobDetail, updateJob, getEmployeeSimple } from '@/api/employees'
 export default {
   data() {
     return {
@@ -193,6 +194,23 @@ export default {
         workingCity: '', // 工作城市
         workingTimeForTheFirstTime: '' // 首次参加工作时间
       }
+    }
+  },
+  created() {
+    this.getJobDetail()
+    this.getEmployeeSimple()
+  },
+  methods: {
+    async getJobDetail() {
+      this.formData = await getJobDetail(this.userId)
+    },
+    // 获取员工列表
+    async getEmployeeSimple() {
+      this.depts = await getEmployeeSimple()
+    },
+    async saveJob() {
+      await updateJob({ ...this.formData, id: this.userId })
+      this.$message.success('保存岗位信息成功')
     }
   }
 }
