@@ -9,6 +9,7 @@ import attendancesRouter from './modules/attendances'
 import salarysRouter from './modules/salarys'
 import settingRouter from './modules/setting'
 import socialRouter from './modules/social'
+import UserRouter from './modules/user'
 
 Vue.use(Router)
 
@@ -48,8 +49,9 @@ export const constantRoutes = [
       component: () => import('@/views/import')
     }]
   },
+  UserRouter // 放置一个我们都可以访问的路由
   // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+  // { path: '*', redirect: '/404', hidden: true }
 ]
 
 // 动态路由
