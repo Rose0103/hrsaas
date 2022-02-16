@@ -46,7 +46,7 @@ const actions = {
     const baseResult = { ...result, ...baseInfo } // 将两个接口结果合并
     // 此时已经获取到了用户的基本资料 迫不得已 为了头像再次调用一个接口
     context.commit('setUserInfo', baseResult) // 提交mutations
-    return false // 这里是给我们做权限的时候 留下伏笔
+    return baseResult // 这里是给我们做权限的时候 留下伏笔
   },
   // 登出的action
   logout(context) {

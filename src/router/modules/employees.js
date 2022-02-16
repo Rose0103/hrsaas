@@ -4,6 +4,7 @@ import layout from '@/layout'
 export default {
   // 路由规则
   path: '/employees',
+  name: 'employees',
   component: layout,
   // 配置二级路由的路由表
   children: [
