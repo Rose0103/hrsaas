@@ -67,8 +67,8 @@ export const asyncRoutes = [
 const createRouter = () => new Router({
   // mode: 'history', // require service support
   scrollBehavior: () => ({ y: 0 }), // 管理滚动行为 如果出现滚动 切换就让 让页面回到顶部
-  // routes: [...constantRoutes, ...asyncRoutes] // 临时合并所有的路由
-  routes: [...constantRoutes] // 临时合并所有的路由
+  routes: [...constantRoutes, ...asyncRoutes] // 临时合并所有的路由
+  // routes: [...constantRoutes] // 临时合并所有的路由
 
 })
 
@@ -77,7 +77,7 @@ const router = createRouter()
 // Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
 export function resetRouter() {
   const newRouter = createRouter()
-  router.matcher = newRouter.matcher // reset router
+  router.matcher = newRouter.matcher // 重新设置路由的可匹配路径
 }
 
 export default router
