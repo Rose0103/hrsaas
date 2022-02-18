@@ -13,8 +13,11 @@
     </div>
 
     <div class="right-menu">
+      <LangSelect class="right-menu-item" />
       <!-- 放置全屏插件 -->
       <ScreenFull class="right-menu-item" />
+      <!-- 放置主题切换组件 -->
+      <ThemePicker class="right-menu-item" />
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
           <img v-imageerror="defaultImg" :src="staffPhoto" class="user-avatar">

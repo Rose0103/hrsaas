@@ -5,6 +5,8 @@ import UploadExcel from './UploadExcel'
 import ImageUpload from './ImageUpload'
 import Print from 'vue-print-nb'
 import ScreenFull from './ScreenFull'
+import ThemePicker from './ThemePicker'
+import LangSelect from './Lang'
 
 export default {
   install(Vue) {
@@ -14,5 +16,7 @@ export default {
     Vue.component('ImageUpload', ImageUpload) // 注册导入上传组件
     Vue.use(Print) // 注册打印机
     Vue.component('ScreenFull', ScreenFull) // 全屏
+    Vue.component('ThemePicker', ThemePicker) // 主题
+    Vue.component('LangSelect', LangSelect) // i18n
   }
 }
